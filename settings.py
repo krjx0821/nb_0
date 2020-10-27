@@ -52,9 +52,14 @@ class data:
         a.insert(2, '类别', '主动混合开放型')
         a.columns = ['基金代码', '基金简称', '类别']
         return a
+    def data31(self):
+        a = pd.read_csv('主动债券封闭型.csv', encoding = "gb2312").T.reset_index(drop=False)
+        a.insert(2, '类别', '主动债券封闭型')
+        a.columns = ['基金代码', '基金简称', '类别']
+        return a
     def data_all(self):
         a = pd.DataFrame({'基金代码': [], '基金简称': [], '类别': []})
-        for i in range(1,4):
+        for i in range(1,10):
             for j in range(1,4):
                 try:
                     exec('global b\nb = self.data' + str(i) + str(j) + '()')
@@ -94,11 +99,14 @@ class fund_settings:
           '主动股票开放型': data().data12()} 
     dict_2 = {'主动混合封闭型': data().data21(), 
           '主动混合开放型': data().data22()}
+    dict_3 = {'主动债券封闭型': data().data31()}
     def __init__(self):
         self.dict_0 = {'股票型基金': self.dict_1,
-                  '混合型基金': self.dict_2}
+                  '混合型基金': self.dict_2,
+                  'nojrgaoihnao': self.dict_3}
         self.list_0 = [self.dict_1,
-                  self.dict_2]
+                  self.dict_2,
+                  self.dict_3]
     def data_init(self):
         return self.dict_0, self.list_0
     

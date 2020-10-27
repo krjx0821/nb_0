@@ -77,6 +77,7 @@ class dl_1(QWidget):
         self.t3 = [self.t, self.t_date]
         self.close()
         
+
 class dl_2(QWidget):
     def __init__(self, text, in_mod = False, in_data = None):
         super(dl_2, self).__init__()
@@ -190,3 +191,71 @@ class dl_2(QWidget):
                   '起始时间：'+ self.list_date[1]
         self.t3 = [self.t, self.list_date[0], self.list_date[1]]
         self.close()
+        
+class dl_3(QWidget):
+    item_list = ['上半年','下半年', '全年']
+    item_dict = {1:'上半年',2:'下半年', 3:'全年'}
+    def __init__(self, text, in_mod = False, in_data = None):
+        super(dl_3, self).__init__()
+        self.setWindowTitle(text)
+        self.t = text
+        self.setGeometry(700, 400, 500, 200)
+        self.vlt = QVBoxLayout(self)
+        self.hlt = QHBoxLayout()
+        self.vlt.addLayout(self.hlt)
+        
+        self.l_nav1 = QLabel('输入年份：')
+        self.l_nav1.setMaximumSize(170 , 40)
+
+        self.le = QLineEdit()
+        
+
+
+        self.hlt.addWidget(self.l_nav1)
+        self.hlt.addWidget(self.le)
+        self.hlt.addStretch()
+        
+        self.hlt2 = QHBoxLayout()
+        self.vlt.addLayout(self.hlt2)
+        
+        self.cbx = QComboBox()
+        self.cbx.addItems(self.item_list)
+        
+        self.l_nav2 = QLabel('选择季度')
+        self.l_nav2.setMaximumSize(170 , 40)
+
+        self.btn = QPushButton('确认')
+        self.btn.clicked.connect(self.out_put)
+
+        self.hlt2.addWidget(self.l_nav2)
+        self.hlt2.addWidget(self.cbx)
+        self.hlt2.addStretch()
+        self.hlt2.addWidget(self.btn)
+        
+        self.l = QLabel()
+        self.l.setFixedHeight(300)
+        self.l.setVisible(False)
+        self.vlt.addWidget(self.l)
+
+        if in_mod:
+            self.t3 = in_data
+            self.l_nav1.setText(self.t3[1])
+            self.l_nav2.setText(self.t3[2])
+
+
+
+    def out_put(self):
+        self.t1 = self.t
+        self.t2 = self.t +'\n'+\
+                  '年份：'+ self.le.text() +'\n'+\
+                  '季度：'+ self.item_dict[self.cbx.currentIndex()+1]
+        self.t3 = [self.t, self.le.text(), str(self.cbx.currentIndex()+1)]
+        print(self.t1,self.t2,self.t3)
+        self.close()
+if __name__ == '__main__':
+    import sys
+    app = QApplication(sys.argv)
+    c=dl_3('jhierghi')
+    c.show()
+    sys.exit(app.exec_())
+        

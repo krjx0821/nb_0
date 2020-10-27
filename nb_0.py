@@ -201,6 +201,8 @@ class window2(QWidget):
                 dl = nb_dl_02.dl_1(text)
             elif (text == '收益率') or (text == '最大回撤'):
                 dl = nb_dl_02.dl_2(text)
+            elif text == '换手率':
+                dl = nb_dl_02.dl_3(text)
             dl.show()
             try:
                 dl.exec_()
@@ -279,7 +281,11 @@ print("wtnwt")'''.format(str(num_save_f_z)))
                 d = w.wsd(code_list, "risk_maxdownside", l3[i][1], l3[i][2])
                 print(d.Data)
                 df[l2[i]] = [i[0] for i in d.Data]
-        
+            elif l3[i][0] == '换手率':
+                d = w.wsd(code_str,'style_rpt_turn', '2020-07-27',
+                          '2020-07-27', 'year={0};Intervaltype={1}'.format(l3[i][1], l3[i][2]))
+                print(d.Data)
+                df[l2[i]] = d.Data[0]
     def para_hide(self):
         global l1, l2, df
         if self.btn12.text() == '隐藏指标参数':
