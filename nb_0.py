@@ -10,6 +10,8 @@ from PyQt5.QtGui import *
 import nb_dl_0, nb_dl_02, nb_dl_03, nb_dl_04, settings
 from settings import pandasModel, f_settings, init_l
 import pandas as pd
+from WindPy import w
+w.start()
 dict_f_z_l1 = {}
 dict_f_z_l2 = {}
 dict_f_z_l3 = {}
@@ -260,11 +262,23 @@ print("wtnwt")'''.format(str(num_save_f_z)))
 
     def get_data(self):
         global l3
-        dict_temp = {}
-        '''for l in l2[4:]:
-            l0 = l.split('\n')
-            dict_temp[l] = l0'''
-        print(dict_temp)
+        code_list = df['基金代码'].tolist()
+        code_str = ','.join(code_list)
+        if self.btn12.text() == '显示指标参数':
+            self.para_hide()
+        for i in range(4, len(l3)):
+            if l3[i][0] == '单位净值':
+                d = w.wsd(code_list, "nav", l3[i][1], l3[i][1])
+                df[l2[i]] = d.Data[0]
+            elif l3[i][0] == '收益率':
+                d1 = w.wsd(code_list, "nav", l3[i][1], l3[i][1]).Data[0]
+                d2 = w.wsd(code_list, "nav", l3[i][2], l3[i][2]).Data[0]
+                d = [(i-j)/j for i, j in zip(d2, d1)]
+                df[l2[i]] = d
+            elif l3[i][0] == '最大回撤':
+                d = w.wsd(code_list, "risk_maxdownside", l3[i][1], l3[i][2])
+                print(d.Data)
+                df[l2[i]] = [i[0] for i in d.Data]
         
     def para_hide(self):
         global l1, l2, df
