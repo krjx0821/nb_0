@@ -7,7 +7,7 @@ Created on Thu Sep 17 14:14:15 2020
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-import nb_dl_0, nb_dl_02, nb_dl_03, nb_dl_04, settings
+import nb_dl_0, nb_dl_02, nb_dl_03, nb_dl_04, nb_dl_05, nb_dl_06, settings, math
 from settings import pandasModel, f_settings, init_l
 import pandas as pd
 from WindPy import w
@@ -33,6 +33,7 @@ num_save_f_z = 0
 class window2(QWidget):
     def __init__(self):
         super(window2,self).__init__()
+        self.load_f()
         self.setWindowTitle("同业分析")
         self.resize(1700, 800)
         self.vlt0 = QVBoxLayout(self)
@@ -124,20 +125,75 @@ class window2(QWidget):
         add_row = QAction("增加基金行", menu)
         add_row.triggered.connect(self.add_row)
         
+        rank = QMenu("列数据处理")
+        rank_col = QAction("依照所选列排序/筛选", menu)
+        rank_col.triggered.connect(self.pre_rank)
+        pic = QAction("依照所选列绘图", menu)
+        pic.triggered.connect(self.pic)
+        rank.addAction(rank_col)
+        rank.addAction(pic)
+                
+        fund_detail = QAction("基金详情", menu)
+        fund_detail.triggered.connect(self.fund_dt)
+        
         menu.addAction(del_col)
         menu.addAction(del_row)
         menu.addSeparator()
         menu.addAction(add_row)
+        menu.addSeparator()
+        menu.addMenu(rank)
+        menu.addSeparator()
+        menu.addAction(fund_detail)
         
         dest_point = self.mapToGlobal(point)
         menu.exec_(dest_point)
+    def pre_rank(self):
+        global dl_rank
+        dl_rank = nb_dl_05.ranking()
+        dl_rank.show()
+        try:
+            dl_rank.exec_()
+        except:
+            pass
+        dl_rank.btn.clicked.connect(self._rank)
+    def _rank(self):
+        #获取所选列数
+        global df, l1, l2, l3, dl_rank
+        index= self.view.selectionModel().selectedIndexes()
+        list1 = list(set([i.column() for i in index]))
+        list1.sort(key=int, reverse=False)
+        for i in list1:
+            if i >= 4:
+                col_index = i
+                break
+        #排序
+        p = dl_rank.proportion
+        ascend_flag = (p < 0)
+        if dl_rank.ckeck_state:
+            df = df.sort_values(by=['类别', l2[col_index]] , axis=0 , ascending = ascend_flag)
+        else:
+            df = df.sort_values(by=l2[col_index] , axis=0 , ascending = ascend_flag)
+        #选取
+        if dl_rank.ckeck_state:
+            l = list(set(df['类别'].tolist()))
+            df0 = df[df['类别']==l[0]]
+            df0 = df0.iloc[:math.ceil((len(df0)*abs(p)/100))]
+            for i in range(1,len(l)):
+                df_temp = df[df['类别']==l[i]]
+                df_temp = df_temp.iloc[:math.ceil((len(df_temp)*abs(p)/100))]
+                df0 = pd.concat([df0, df_temp])
+            df = df0
+        else:
+            df = df.iloc[:int(len(df)*abs(p)/100)]
+        df[''] = list(range(len(df)))
+        df.reset_index(drop=True, inplace=True)
+        self.model = pandasModel(df)
+        self.view.setModel(self.model)
+        self.view.updateEditorData()
     def del_col(self):
         global df, l1, l2, l3
         index= self.view.selectionModel().selectedIndexes()
-        list1=[]
-        for i in index:
-            list1.append(i.column())
-        list1 = list(set(list1))
+        list1 = list(set([i.column() for i in index]))
         list1.sort(key=int, reverse=True)
         print('list1: ', list1)
         for i in list1:
@@ -153,15 +209,12 @@ class window2(QWidget):
     def del_row(self):
         global df
         index= self.view.selectionModel().selectedIndexes()
-        list1=[]
-        for i in index:
-            list1.append(i.row())
-        list1 = list(set(list1))
+        list1 = list(set([i.row() for i in index]))
         list1.sort(key=int, reverse=True)
         print('list1: ', list1)
         for i in list1:
             df = df.drop(index = i)
-        df[''] = range(0,len(df))
+        df[''] = range(len(df))
         df.reset_index(drop=True, inplace=True)
         print(df)
         self.model = pandasModel(df)
@@ -189,7 +242,28 @@ class window2(QWidget):
         self.view.updateEditorData()
         
         self.plot_tree2()
-        
+    def pic(self):
+        global df, l1, l2, l3, dl_pic
+        index= self.view.selectionModel().selectedIndexes()
+        list1 = list(set([i.column() for i in index]))
+        list1.sort(key=int, reverse=False)
+        l_pic = []
+        for i in list1:
+            if i >= 4:
+                l_pic.append(l3[i])
+        list2 = list(set([i.row() for i in index]))
+        list2.sort(key=int, reverse=False)
+        list2 = df.iloc[list2]['基金代码'].tolist()
+        print(l_pic, list2)
+        dl_pic = nb_dl_06.w_pic(list2, l_pic)
+        dl_pic.show()
+        try:
+            dl_pic.exec_()
+        except:
+            pass
+    def fund_dt(self):
+        pass
+    
     def f(self):
         text = self.sender().objectName()
         global dl
@@ -252,16 +326,41 @@ class window2(QWidget):
         global l1, l2, l3, num_save_f_z
         i = nb_dl_04.f_name
         f.l_f_update(i)
+        fi = open(i + ".txt", "w")
+        print('ll1 =', l1, file=fi)
+        print('ll2 =', l2, file=fi)
+        print('ll3 =', l3, file=fi)
+        fi.close()
         exec('''l1_{0} = l1.copy()
 l2_{0} = l2.copy()
 l3_{0} = l3.copy()
 dict_f_z_l1[i] = l1_{0}
 dict_f_z_l2[i] = l2_{0}
-dict_f_z_l3[i] = l3_{0}
-print("wtnwt")'''.format(str(num_save_f_z)))
+dict_f_z_l3[i] = l3_{0}'''.format(str(num_save_f_z)))
         num_save_f_z += 1
         self.plot_tree1()
-
+    def load_f(self):
+        import os
+        #path = os.path.abspath('..')+'\w.bat'
+        path = 'C:\\Users/19749/Desktop/Qt5/半成品/演示/w.bat'
+        os.system(path)
+        fi = open('LIST.TXT')
+        a = fi.read()
+        filename_list = a.split('\n')
+        fi.close()
+        for title in filename_list:
+            if '.txt' in title:
+                m = open(title)
+                m_r = m.read()
+                print(m_r)
+                exec('''ll1,ll2,ll3 = [],[],[]
+'''+m_r+'''
+dict_f_z_l1[title] = ll1
+dict_f_z_l2[title] = ll2
+dict_f_z_l3[title] = ll3
+f.l_f_update(title)''')
+        print(dict_f_z_l1)
+        
     def get_data(self):
         global l3
         code_list = df['基金代码'].tolist()
@@ -270,15 +369,15 @@ print("wtnwt")'''.format(str(num_save_f_z)))
             self.para_hide()
         for i in range(4, len(l3)):
             if l3[i][0] == '单位净值':
-                d = w.wsd(code_list, "nav", l3[i][1], l3[i][1])
+                d = w.wsd(code_str, "nav", l3[i][1], l3[i][1])
                 df[l2[i]] = d.Data[0]
             elif l3[i][0] == '收益率':
-                d1 = w.wsd(code_list, "nav", l3[i][1], l3[i][1]).Data[0]
-                d2 = w.wsd(code_list, "nav", l3[i][2], l3[i][2]).Data[0]
+                d1 = w.wsd(code_str, "nav", l3[i][1], l3[i][1]).Data[0]
+                d2 = w.wsd(code_str, "nav", l3[i][2], l3[i][2]).Data[0]
                 d = [(i-j)/j for i, j in zip(d2, d1)]
                 df[l2[i]] = d
             elif l3[i][0] == '最大回撤':
-                d = w.wsd(code_list, "risk_maxdownside", l3[i][1], l3[i][2])
+                d = w.wsd(code_str, "risk_maxdownside", l3[i][1], l3[i][2])
                 print(d.Data)
                 df[l2[i]] = [i[0] for i in d.Data]
             elif l3[i][0] == '换手率':
@@ -286,6 +385,9 @@ print("wtnwt")'''.format(str(num_save_f_z)))
                           '2020-07-27', 'year={0};Intervaltype={1}'.format(l3[i][1], l3[i][2]))
                 print(d.Data)
                 df[l2[i]] = d.Data[0]
+        self.model = pandasModel(df)
+        self.view.setModel(self.model)
+        self.view.updateEditorData()
     def para_hide(self):
         global l1, l2, df
         if self.btn12.text() == '隐藏指标参数':
@@ -333,7 +435,9 @@ print("wtnwt")'''.format(str(num_save_f_z)))
         df0 = dl_f.df0
         df = pd.DataFrame(data = None, columns = df.columns.tolist())
         print(df)
+
         df = pd.concat([df, df0])
+        df.drop_duplicates(subset=['基金代码'], keep='last', inplace=True)
         df[''] = range(0,len(df))
         df.reset_index(drop=True, inplace=True)
         print(df)
@@ -405,7 +509,7 @@ print("wtnwt")'''.format(str(num_save_f_z)))
     def save_fund2(self):
         global dl_f
         dl_f.save_fund()
-
+        
     def to_csv(self):
         global dl_save_csv
         dl_save_csv = nb_dl_04.dl_save_csv()

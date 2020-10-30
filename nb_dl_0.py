@@ -291,7 +291,6 @@ class dl_save_fund(QDialog):
         self.vlt.addWidget(self.l)
         self.vlt.addWidget(self.le)
         self.vlt.addWidget(self.btn)
-        
     def p(self):
         global s_text
         s_text = self.le.text()

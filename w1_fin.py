@@ -182,32 +182,7 @@ class window1(QWidget):
             self.spl1.setHidden(True)
             self.btn2.setText('>>')
             w1_flag0 = False
-            
-    def sh2(self):
-        global w1_flag1
-        if w1_flag1 == False:
-            self.l1.setHidden(False)
-            self.l2.setHidden(False)
-            self.cbx1.setHidden(False)
-            self.cbx2.setHidden(False)
-            self.btn4.setHidden(False)
-            self.btn_cal1.setHidden(False)
-            self.btn_cal2.setHidden(False)
-            self.btn04.setText('收起上方选择栏')
-            w1_flag1 = True
-        else:
-            self.l1.setHidden(True)
-            self.l2.setHidden(True)
-            self.cbx1.setHidden(True)
-            self.cbx2.setHidden(True)
-            self.btn4.setHidden(True)
-            self.btn_cal1.setHidden(True)
-            self.btn_cal2.setHidden(True)
-            self.cal1.setHidden(True)
-            self.cal2.setHidden(True)
-            self.btn04.setText('展开上方选择栏')
-            w1_flag1 = False
-            
+
     def onclick(self,item,cloumn):
         global list_add
         if item.checkState(cloumn) == Qt.Checked:
@@ -217,7 +192,6 @@ class window1(QWidget):
             del list_add[item.text(0)]
             print("unchecked", item.text(0))
         print(list_add)
-        
     def add(self):
         global list_add
         self.tree2.clear()
@@ -237,7 +211,6 @@ class window1(QWidget):
         else:
             self.cal1.setVisible(False)
             self.btn_cal1.setText('选择起始日期')
-            
     def show_cal2(self):
         if self.btn_cal2.text() == '选择结束日期':
             self.cal2.move(self.btn_cal2.geometry().x(), self.btn_cal2.geometry().y()+55)
@@ -247,7 +220,6 @@ class window1(QWidget):
         else:
             self.cal2.setVisible(False)
             self.btn_cal2.setText('选择结束日期')
-    
     def showDate(self):
         global list_date
         a = self.cal1.selectedDate().toString('yyyy-MM-dd dddd')
@@ -303,13 +275,11 @@ class window1(QWidget):
                     j = (i+1) // lenth
                     k = (i+1) - j*lenth
                     self.plot2(i, j, k)
-        
     def plot1(self, i):
         global list_name, data
         t = data.Times
         s = data.Data[i]
         self.F.axes.plot(t, s, marker = 'o', label = list_name[i])
-
     def plot2(self, i, j, k):
         global list_name, data
         self.f = MyFigure(width=3, height=2, dpi=70)

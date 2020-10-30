@@ -31,7 +31,6 @@ class dl_save_csv(QWidget):
         self.vlt.addLayout(self.hlt)
         self.hlt.addStretch()
         self.hlt.addWidget(self.btn)
-        
     def p(self):
         global path_text
         path_text = self.le.text()

@@ -5,38 +5,69 @@ Created on Thu Oct 22 15:10:41 2020
 @author: wuqian
 """
 from random import normalvariate
+import matplotlib.pyplot as plt
 
 class model:
-    def __init__(self, lenth, sigma = 1, w = [0.5, 1.5], r = 1):
+    def __init__(self, lenth, r = 15, c = 20, sigma = 1, w = [0.5, 1.5]):
         self.lenth = lenth
         self.sigma = sigma
         self.w = w
         self.r = r
+        self.c = c
     
     def generate_t_series(self):
         t = []
-        for i in range(self.lenth):
-            r = normalvariate(self.r/21, self.sigma)
-            r = 1 + r/100
-            t.append(r)
+        for j in range(self.c):
+            if j % 2 == 0:
+                for i in range(self.lenth//self.c):
+                    r = normalvariate(-self.r/21, self.sigma)
+                    r = 1 + r/100
+                    t.append(r)
+            else:
+                if j == (self.c-1):
+                    for i in range(self.lenth-(self.lenth//self.c)*(self.c-1)):
+                        r = normalvariate(0.01*self.r/21, self.sigma)
+                        r = 1 + r/100
+                        t.append(r)
+                else:
+                    for i in range(self.lenth//self.c):
+                        r = normalvariate(self.r/18, self.sigma)
+                        r = 1 + r/100
+                        t.append(r)
+        
         self.t = t
         
     def test(self, time):
         A = []
         B = []
         C = []
+        D = []
         for i in range(time):
-            self.generate_t_series()
-            a0, b0 ,c0 = self.cycle()
+            a0, b0 ,c0 , d0= self.cycle()
             A.append(a0)
             B.append(b0)
             C.append(c0)
+            D.append(d0)
+        r1 = sum(D)/len(D)*100
+        r2 = ((sum(B)/len(B))/(sum(A)/len(A)))*100
         print('max_b: ', sum(A)/len(A))
         print('净收益: ', sum(B)/len(B))
         print('套牢部分：', sum(C)/len(C))
-        print('收益率', ((sum(B)/len(B))/(sum(A)/len(A)))*100, '%')
+        print('模拟收益率:', r1, '%')
+        print('策略收益率:', r2, '%')
+        l = [(i-1)*100 for i in self.t]
+        print('模拟每日涨跌幅：', l)
+        if r2 > r1:
+            print('策略有效')
+        else:
+            print('策略无效')
+        p_list = [1]
+        for i in self.t:
+            p_list.append(p_list[-1]*i)
+        plt.plot(p_list)   
     
     def cycle(self):
+        self.generate_t_series()
         a = [99.85] #每日买入保留净值
         n = [1] #每日份额
         nav = [1] #每日净值
@@ -104,9 +135,11 @@ class model:
                                     n0 += 1
                                 else:
                                     break
-                            
-        return max_b, sum(a)-b, sum(a)
+        r_sum = 1
+        for i in self.t:
+            r_sum *= i
+        return max_b, sum(a)-b, sum(a), r_sum-1
       
 if __name__ == '__main__':
-    m = model(21)
-    m.test(2000)
+    m = model(84)
+    m.test(50)

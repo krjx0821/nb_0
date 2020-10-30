@@ -46,7 +46,6 @@ class Demo(QWidget):
     def btn2_Clicked(self):
         self.stacked_layout.setCurrentIndex(1)
         
-        
 class Main(QMainWindow):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
@@ -79,7 +78,6 @@ class Main(QMainWindow):
                         submenu.addAction(act)
             else:
                 self.set_check_menu_cycle(submenu, d[i])
-
 
 if __name__ == '__main__':
     import sys

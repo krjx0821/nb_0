@@ -221,7 +221,7 @@ class dl_3(QWidget):
         self.cbx = QComboBox()
         self.cbx.addItems(self.item_list)
         
-        self.l_nav2 = QLabel('选择季度')
+        self.l_nav2 = QLabel('选择季度：')
         self.l_nav2.setMaximumSize(170 , 40)
 
         self.btn = QPushButton('确认')
@@ -239,11 +239,8 @@ class dl_3(QWidget):
 
         if in_mod:
             self.t3 = in_data
-            self.l_nav1.setText(self.t3[1])
-            self.l_nav2.setText(self.t3[2])
-
-
-
+            self.le.setText(self.t3[1])
+            self.cbx.setCurrentIndex(int(self.t3[2]))
     def out_put(self):
         self.t1 = self.t
         self.t2 = self.t +'\n'+\
@@ -252,10 +249,11 @@ class dl_3(QWidget):
         self.t3 = [self.t, self.le.text(), str(self.cbx.currentIndex()+1)]
         print(self.t1,self.t2,self.t3)
         self.close()
+        
+        
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
     c=dl_3('jhierghi')
     c.show()
     sys.exit(app.exec_())
-        
